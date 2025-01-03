@@ -1,4 +1,6 @@
-<ion-tabs>
+<app-shared-header [title]="tabTitle"></app-shared-header>
+
+<ion-tabs (ionTabsDidChange)="onTabsDidChange($event)">
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="tab1" href="/tabs/tab1">
       <ion-icon aria-hidden="true" name="triangle"></ion-icon>
