@@ -3,7 +3,12 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  apiKey: '',
+  model: 'gpt-4o-realtime-preview-2024-12-17',
+  voice: 'verse',
+  baseUrl: 'https://api.openai.com/v1/realtime',
+  sessionsUrl: 'https://api.openai.com/v1/realtime/sessions'
 };
 
 /*
