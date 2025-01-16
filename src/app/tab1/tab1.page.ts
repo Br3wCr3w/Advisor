@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
-import { IonContent } from '@ionic/angular/standalone';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
+import { IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { ConversationComponent } from '../shared/components/conversation/conversation.component';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
-  imports: [IonContent, ExploreContainerComponent],
+  standalone: true,
+  imports: [IonicModule, CommonModule, ConversationComponent]
 })
 export class Tab1Page {
   constructor() {}

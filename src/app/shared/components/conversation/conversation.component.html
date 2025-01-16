@@ -1,0 +1,17 @@
+<div class="controls-container">
+  <!-- Hidden API key input -->
+  <input type="hidden" #apiKey id="apiKey" />
+
+  <button #connectBtn id="connectBtn" (click)="connect()">Connect</button>
+  <button #disconnectBtn id="disconnectBtn" (click)="disconnect()">Disconnect</button>
+
+  <div #status id="status"></div>
+
+  <!-- Will play incoming audio from the Realtime API here -->
+  <audio #remoteAudio id="remoteAudio" autoplay></audio>
+</div>
+
+
+<div #conversation id="conversation">
+  <!-- Conversation text from the Realtime API will be added here -->
+</div>

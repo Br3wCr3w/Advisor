@@ -1,0 +1,136 @@
+/* 
+   Retro 80s color theme bubble chat-style - compiled from SCSS
+   ------------------------------------------------------------
+*/
+
+/* Base styling for page */
+body {
+    background: #1a1a1a;
+    color: #f3f3f3;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Title styling */
+  h1 {
+    color: #ba86fc;
+    text-shadow: 0px 0px 4px #ba86fc;
+    margin-bottom: 1rem;
+  }
+  
+  /* Controls container */
+  .controls-container {
+    padding-top: 100px;
+    margin-bottom: 10px;
+  }
+  
+  /* Inputs, buttons, labels, and status message */
+  label {
+    color: #a5fc63;
+    font-weight: 600;
+  }
+  
+  input[type="text"] {
+    border: 2px solid #3ff8f8;
+    background-color: #1a1a1a;
+    color: #f3f3f3;
+    padding: 8px;
+    border-radius: 4px;
+  }
+  
+  input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 4px #3ff8f8;
+  }
+  
+  button {
+    background-color: #ff6ad5;
+    color: #1a1a1a;
+    border: none;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-shadow: 0 0 3px #ff6ad5;
+    transition: transform 0.2s ease;
+  }
+  
+  button:hover {
+    transform: scale(1.05);
+  }
+  
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  #status {
+    margin-top: 10px;
+    font-family: sans-serif;
+    font-size: 14px;
+    color: #3ff8f8;
+  }
+  
+  #conversation {
+    background-color: rgba(186, 134, 252, 0.1);
+    padding: 12px;
+    margin-top: 16px;
+    margin-bottom: 25px;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+    border: 2px dashed #3ff8f8;
+    border-radius: 6px;
+  }
+  
+  /* Message container for proper alignment */
+  #conversation p {
+    margin: 0 0 12px 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+  }
+  
+  /* Bubble styling */
+  #conversation p span {
+    display: inline-block;
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 16px;
+    position: relative;
+    color: #1a1a1a;
+    background-color: #3ff8f8;
+    line-height: 1.4;
+    box-shadow: 0 0 6px rgba(63, 248, 248, 0.6);
+  }
+  
+  #conversation p span::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 12px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-right-color: #3ff8f8;
+  }
+  
+  /* Transcript bubble styling */
+  #conversation p.transcript-bubble {
+    justify-content: flex-end;
+  }
+  
+  #conversation p.transcript-bubble span {
+    background-color: #a5fc63;
+    box-shadow: 0 0 6px rgba(165, 252, 99, 0.6);
+  }
+  
+  #conversation p.transcript-bubble span::before {
+    left: auto;
+    right: -8px;
+    border-right-color: transparent;
+    border-left-color: #a5fc63;
+  } 
