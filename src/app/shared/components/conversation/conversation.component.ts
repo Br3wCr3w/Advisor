@@ -1,29 +1,38 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from 'src/environments/environment';
 import { RealtimeConnection } from 'src/app/ai/realtime-connection';
+import { IonList, IonItem, IonButton, IonContent, IonLabel } from '@ionic/angular/standalone';
+
+interface Message {
+  text: string;
+  isUser: boolean;
+  isPartial?: boolean;
+  itemId?: string;
+  placeholder?: boolean;
+}
 
 @Component({
   selector: 'app-conversation',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonList, IonItem, IonButton, IonContent, IonLabel],
   templateUrl: './conversation.component.html',
   styleUrls: ['./conversation.component.scss']
 })
 export class ConversationComponent implements OnInit {
   @ViewChild('apiKey') apiKey!: ElementRef<HTMLInputElement>;
-  @ViewChild('connectBtn') connectBtn!: ElementRef<HTMLButtonElement>;
-  @ViewChild('disconnectBtn') disconnectBtn!: ElementRef<HTMLButtonElement>;
   @ViewChild('status') status!: ElementRef<HTMLDivElement>;
   @ViewChild('remoteAudio') remoteAudio!: ElementRef<HTMLAudioElement>;
-  @ViewChild('conversation') conversation!: ElementRef<HTMLDivElement>;
+  @ViewChild(IonContent) content!: IonContent;
 
-  // State variables for managing conversation UI
-  currentParagraph: HTMLElement | null = null;
-  transcriptionPlaceholder: HTMLElement | null = null;
+  messages: Message[] = [];
   realtimeConnection: RealtimeConnection | null = null;
+  currentMessage: Message | null = null;
+  currentUserMessage: Message | null = null;
+  isConnectDisabled = false;
+  isDisconnectDisabled = true;
 
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     // Bind the methods to preserve 'this' context
     this.onStatus = this.onStatus.bind(this);
     this.onTranscriptDelta = this.onTranscriptDelta.bind(this);
@@ -40,104 +49,104 @@ export class ConversationComponent implements OnInit {
     this.apiKey.nativeElement.value = environment?.apiKey || '';
   }
 
-    /**
-   * Helper function to automatically scroll the conversation container to the bottom
-   * Called whenever new content is added to keep the latest messages visible
-   */
-  scrollToBottom() {
-    this.conversation.nativeElement.scrollTop = this.conversation.nativeElement.scrollHeight;
+  async scrollToBottom() {
+    await this.content.scrollToBottom(300);
   }
 
-   /**
-   * Updates the status message displayed to the user
-   * @param {string} message - The status message to display
-   */
-   onStatus(message: string) {
+  onStatus(message: string) {
     this.status.nativeElement.textContent = message;
-  };
+  }
 
-    /**
-   * Handles incoming transcript deltas (partial responses) from the AI
-   * Creates or updates paragraphs in the conversation UI
-   * @param {string} delta - The new piece of transcript text
-   * @param {string} itemId - Identifier for the transcript item
-   */
-    onTranscriptDelta(delta: string, itemId: string) {
-      // If we're starting a new response, make new paragraph
-      if (!this.currentParagraph) {
-        this.currentParagraph = document.createElement('p');
-        this.currentParagraph.innerHTML = '<span></span>';
-        this.conversation.nativeElement.appendChild(this.currentParagraph);
-        this.scrollToBottom();
+  onTranscriptDelta(delta: string, itemId: string) {
+    console.log('Delta received:', delta, 'itemId:', itemId);
+    
+    // If we have a new itemId or no current message, start a new message
+    if (!this.currentMessage || (this.currentMessage.itemId !== itemId)) {
+      // First, ensure we have a placeholder for the user's message
+      if (!this.currentUserMessage) {
+        this.currentUserMessage = {
+          text: 'Waiting for transcription...',
+          isUser: true,
+          isPartial: true,
+          placeholder: true,
+          itemId: 'user-' + Date.now()
+        };
+        this.messages.push(this.currentUserMessage);
       }
-      const span = this.currentParagraph?.querySelector('span');
-      if (span) {
-        span.textContent += delta;
-      }
-      this.scrollToBottom();
-    };
 
-      /**
-   * Handles the completion of an AI response transcript
-   * Resets the current paragraph state
-   */
-  onTranscriptDone() {
-    // End the paragraph
-    this.currentParagraph = null;
-  };
-
-    /**
-   * Creates a placeholder element when user starts speaking
-   * Provides visual feedback that the system is waiting for transcription
-   */
-    onSpeechStarted() {
-      if (!this.transcriptionPlaceholder) {
-        this.transcriptionPlaceholder = document.createElement('p');
-        this.transcriptionPlaceholder.classList.add('transcript-bubble');
-        this.transcriptionPlaceholder.innerHTML = '<span>Waiting for transcription...</span>';
-        this.conversation.nativeElement.appendChild(this.transcriptionPlaceholder);
-        this.scrollToBottom();
-      }
-    };
-
-     /**
-   * Handles the completed transcription of user speech
-   * Updates the placeholder or creates a new transcript bubble
-   * @param {string} transcript - The complete transcribed text
-   */
-  onTranscriptCompleted(transcript: string) {
-    // If we have a placeholder, update it
-    if (this.transcriptionPlaceholder) {
-      this.transcriptionPlaceholder.innerHTML = `<span>${transcript}</span>`;
-      this.transcriptionPlaceholder = null;
-    } else {
-      // Fallback: create new bubble if no placeholder exists
-      const transcriptParagraph = document.createElement('p');
-      transcriptParagraph.classList.add('transcript-bubble');
-      transcriptParagraph.innerHTML = `<span>${transcript}</span>`;
-      this.conversation.nativeElement.appendChild(transcriptParagraph);
+      // Then create the new LLM message
+      this.currentMessage = {
+        text: '',
+        isUser: false,
+        isPartial: true,
+        itemId: itemId
+      };
+      this.messages.push(this.currentMessage);
     }
+    
+    // Always append the delta to the current message
+    this.currentMessage.text += delta;
+    this.cdr.detectChanges();
     this.scrollToBottom();
-  };
+  }
 
-    /**
-   * Handles successful connection to the realtime service
-   * Enables the disconnect button
-   */
+  onTranscriptDone() {
+    console.log('Transcript done, final text:', this.currentMessage?.text, 'itemId:', this.currentMessage?.itemId);
+    if (this.currentMessage) {
+      this.currentMessage.isPartial = false;
+      this.cdr.detectChanges();
+    }
+    this.currentMessage = null;
+  }
+
+  onSpeechStarted() {
+    console.log('Speech started');
+    // Don't create a new message if we already have a placeholder
+    if (!this.currentUserMessage) {
+      this.currentUserMessage = {
+        text: 'Waiting for transcription...',
+        isUser: true,
+        isPartial: true,
+        placeholder: true,
+        itemId: 'user-' + Date.now()
+      };
+      this.messages.push(this.currentUserMessage);
+      this.cdr.detectChanges();
+      this.scrollToBottom();
+    }
+  }
+
+  onTranscriptCompleted(transcript: string) {
+    console.log('Transcript completed:', transcript);
+    if (this.currentUserMessage) {
+      // Update the existing placeholder message
+      this.currentUserMessage.text = transcript;
+      this.currentUserMessage.isPartial = false;
+      this.currentUserMessage.placeholder = false;
+    } else {
+      // If no placeholder exists (shouldn't happen), create new message
+      this.currentUserMessage = {
+        text: transcript,
+        isUser: true,
+        isPartial: false,
+        itemId: 'user-' + Date.now()
+      };
+      this.messages.push(this.currentUserMessage);
+    }
+    this.currentUserMessage = null;  // Reset the current user message
+    this.cdr.detectChanges();
+    this.scrollToBottom();
+  }
+
   onConnectionSuccess() {
-    this.disconnectBtn.nativeElement.disabled = false;
-  };
+    this.isDisconnectDisabled = false;
+  }
 
-   /**
-   * Handles connection errors
-   * Updates UI to show error state and re-enables connect button
-   * @param {Error} err - The error that occurred
-   */
   onConnectionError(err: Error) {
     console.error(err);
     this.status.nativeElement.textContent = `Connection error: ${err.message}`;
-    this.connectBtn.nativeElement.disabled = false;
-  };
+    this.isConnectDisabled = false;
+  }
 
   async connect() {
     console.log('connect');
@@ -147,7 +156,7 @@ export class ConversationComponent implements OnInit {
       return;
     }
 
-    this.connectBtn.nativeElement.disabled = true;
+    this.isConnectDisabled = true;
 
     // Instantiate a new RealtimeConnection with all callback handlers
     this.realtimeConnection = new RealtimeConnection({
@@ -172,8 +181,8 @@ export class ConversationComponent implements OnInit {
       this.realtimeConnection.disconnect();
       this.realtimeConnection = null;
     }
-    this.connectBtn.nativeElement.disabled = false;
-    this.disconnectBtn.nativeElement.disabled = true;
+    this.isConnectDisabled = false;
+    this.isDisconnectDisabled = true;
     this.status.nativeElement.textContent = 'Disconnected from Realtime API.';
   }
 
