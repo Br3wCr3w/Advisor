@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiKey: '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',
+  apiKey: '',
   model: 'gpt-4o-realtime-preview-2024-12-17',
   voice: 'verse',
   baseUrl: 'https://api.openai.com/v1/realtime',
