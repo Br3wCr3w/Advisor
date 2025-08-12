@@ -1,8 +1,9 @@
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 import { RealtimeConnection } from 'src/app/ai/realtime-connection';
-import { IonList, IonItem, IonButton, IonContent, IonLabel } from '@ionic/angular/standalone';
+import { IonList, IonItem, IonButton, IonContent, IonLabel, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 
 interface Message {
   text: string;
@@ -15,7 +16,7 @@ interface Message {
 @Component({
   selector: 'app-conversation',
   standalone: true,
-  imports: [CommonModule, IonList, IonItem, IonButton, IonContent, IonLabel],
+  imports: [CommonModule, FormsModule, IonList, IonItem, IonButton, IonContent, IonLabel, IonSelect, IonSelectOption],
   templateUrl: './conversation.component.html',
   styleUrls: ['./conversation.component.scss']
 })
@@ -31,6 +32,19 @@ export class ConversationComponent implements OnInit {
   currentUserMessage: Message | null = null;
   isConnectDisabled = false;
   isDisconnectDisabled = true;
+
+  // Voice selection
+  voices = [
+    { id: 'alloy', name: 'Alloy', description: 'Neutral and balanced.' },
+    { id: 'ash', name: 'Ash', description: 'Clear and precise.' },
+    { id: 'ballad', name: 'Ballad', description: 'Melodic and smooth.' },
+    { id: 'coral', name: 'Coral', description: 'Warm and friendly.' },
+    { id: 'echo', name: 'Echo', description: 'Resonant and deep.' },
+    { id: 'sage', name: 'Sage', description: 'Calm and thoughtful.' },
+    { id: 'shimmer', name: 'Shimmer', description: 'Bright and energetic.' },
+    { id: 'verse', name: 'Verse', description: 'Versatile and expressive.' }
+  ];
+  selectedVoice: string = 'verse';
 
   constructor(private cdr: ChangeDetectorRef) {
     // Bind the methods to preserve 'this' context
@@ -170,7 +184,7 @@ export class ConversationComponent implements OnInit {
     });
 
     try {
-      await this.realtimeConnection.connect(standardApiKey, this.remoteAudio.nativeElement);
+      await this.realtimeConnection.connect(standardApiKey, this.remoteAudio.nativeElement, this.selectedVoice);
     } catch (error) {
       // connection error is handled in onConnectionError
     }    

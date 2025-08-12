@@ -42,10 +42,10 @@ export class RealtimeConnection {
       this.onSpeechStarted = onSpeechStarted;
     }
   
-    async connect(standardApiKey: string, audioElement: HTMLAudioElement) {
+    async connect(standardApiKey: string, audioElement: HTMLAudioElement, voice: string = 'verse') {
       try {
         // Step 1: Acquire ephemeral key
-        this.onStatus('Requesting ephemeral key (voice: "verse")...');
+        this.onStatus(`Requesting ephemeral key (voice: "${voice}")...`);
         const ephemeralResp = await fetch(environment.sessionsUrl, {
           method: 'POST',
           headers: {
@@ -54,7 +54,7 @@ export class RealtimeConnection {
           },
           body: JSON.stringify({
             model: 'gpt-4o-realtime-preview-2024-12-17',
-            voice: 'verse'
+            voice
           })
         });
   
@@ -86,7 +86,7 @@ export class RealtimeConnection {
             session: {
               modalities: ["text", "audio"],
               instructions: "You are a helpful assistant.",
-              voice: "sage",
+              voice,
               input_audio_format: "pcm16",
               output_audio_format: "pcm16",
               input_audio_transcription: {
@@ -195,7 +195,7 @@ export class RealtimeConnection {
         };
         await this.peerConnection.setRemoteDescription(serverAnswer);
   
-        this.onStatus('Connected to Realtime API with voice: "verse"');
+        this.onStatus(`Connected to Realtime API with voice: "${voice}"`);
         if (this.onConnectionSuccess) {
           this.onConnectionSuccess();
         }

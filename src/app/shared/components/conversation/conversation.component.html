@@ -2,6 +2,15 @@
 <div class="controls-container">
   <input type="hidden" #apiKey id="apiKey" />
   
+  <div class="voice-select">
+    <label for="voice">AI Voice</label>
+    <ion-select id="voice" interface="popover" [(ngModel)]="selectedVoice">
+      <ion-select-option *ngFor="let v of voices" [value]="v.id">
+        {{ v.name }} — {{ v.description }}
+      </ion-select-option>
+    </ion-select>
+  </div>
+  
   <ion-button id="connectBtn" (click)="connect()" [disabled]="isConnectDisabled">Connect</ion-button>
   <ion-button id="disconnectBtn" (click)="disconnect()" [disabled]="isDisconnectDisabled" color="danger">Disconnect</ion-button>
   
